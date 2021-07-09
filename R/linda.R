@@ -160,7 +160,7 @@ linda <- function(otu.tab, meta, formula,
         tmp <- lm(as.formula(paste0('logN', formula)), Z)
       }
       corr.pval <- coef(summary(tmp))[-1, "Pr(>|t|)"]
-      if(any(corr.pval) <= 0.1)
+      if(any(corr.pval <= 0.1))
         warning('Significant correlation between sequencing depths and explanatory variables exists. Consider rarefying or setting imputation=TRUE.\n')
     }
   }
