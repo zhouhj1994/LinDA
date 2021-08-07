@@ -1,7 +1,7 @@
 # LinDA
 Linear model for differential abundance analysis. 
 
-Reference: Huijuan Zhou, Xianyang Zhang, Kejun He, and Jun Chen. (2021). LinDA: Linear Models for Differential Abundance Analysis of Microbiome Compositional Data.
+Reference: Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. (2021). LinDA: Linear Models for Differential Abundance Analysis of Microbiome Compositional Data.
 
 LinDA implements a simple, robust and highly scalable approach to tackle the compositional effects in differential abundance analysis. 
 It fits linear regression models on the centered log2-ratio transformed data, identifies a bias term due to the transformation
