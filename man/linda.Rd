@@ -8,6 +8,7 @@ linda(
   otu.tab,
   meta,
   formula,
+  adaptive = TRUE,
   imputation = FALSE,
   pseudo.cnt = 0.5,
   p.adj.method = "BH",
@@ -27,10 +28,16 @@ NAs are allowed. If there are NAs, the corresponding samples will be removed in 
 
 \item{formula}{character. For example: \code{formula = '~x1*x2+x3+(1|id)'}. At least one fixed effect is required.}
 
-\item{imputation}{TRUE or FALSE. If TRUE, zeros in \code{otu.tab} will be imputed;
-otherwise, we add \code{pseudo.cnt} to each value in \code{otu.tab}.}
+\item{adaptive}{TRUE or FALSE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter what it is actually set to be.
+Then the significant correlations between the sequencing depth and explanatory variables will be tested via linear regression between
+the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to 0.1, then the imputation approach
+will be used; otherwise, the pseudo-count approach will be used. The information of whether the imputation or pseudo-count approach is used will be printed.}
 
-\item{pseudo.cnt}{a positive real value. Default is 0.5.}
+\item{imputation}{TRUE or FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be imputed using the formula
+in the referenced paper.}
+
+\item{pseudo.cnt}{a positive real value. Default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
+then we use the pseudo-count approach, i.e., we add \code{pseudo.cnt} to each value in \code{otu.tab}.}
 
 \item{p.adj.method}{character; p-value adjusting approach. See R function \code{p.adjust}. Default is 'BH'.}
 
