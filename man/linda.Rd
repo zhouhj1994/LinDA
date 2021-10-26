@@ -2,7 +2,7 @@
 % Please edit documentation in R/linda.R
 \name{linda}
 \alias{linda}
-\title{Perform LinDA (Linear model for differential abundance analysis)}
+\title{Linear (Lin) model for differential abundance (DA) analysis}
 \usage{
 linda(
   otu.tab,
@@ -28,13 +28,14 @@ NAs are allowed. If there are NAs, the corresponding samples will be removed in 
 
 \item{formula}{character. For example: \code{formula = '~x1*x2+x3+(1|id)'}. At least one fixed effect is required.}
 
-\item{adaptive}{TRUE or FALSE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter what it is actually set to be.
-Then the significant correlations between the sequencing depth and explanatory variables will be tested via linear regression between
-the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to 0.1, then the imputation approach
-will be used; otherwise, the pseudo-count approach will be used. The information of whether the imputation or pseudo-count approach is used will be printed.}
+\item{adaptive}{TRUE or FALSE. Default is TRUE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter
+what it is actually set to be. Then the significant correlations between the sequencing depth and explanatory variables will be tested
+via the linear regression between the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to 0.1,
+the imputation approach will be used; otherwise, the pseudo-count approach will be used.
+The information of whether the imputation or pseudo-count approach is used will be printed.}
 
-\item{imputation}{TRUE or FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be imputed using the formula
-in the referenced paper.}
+\item{imputation}{TRUE or FALSE. Default is FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be
+imputed using the formula in the referenced paper.}
 
 \item{pseudo.cnt}{a positive real value. Default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
 then we use the pseudo-count approach, i.e., we add \code{pseudo.cnt} to each value in \code{otu.tab}.}
@@ -61,28 +62,28 @@ A list with the elements
 Suppose \code{x1} and \code{x2} are numerical, and \code{x3} is a categorical variable of three levels: a, b and c.
 Then the elements of \code{variables} would be \code{('x1', 'x2', 'x3b', 'x3c', 'x1:x2')}.}
 \item{bias}{numeric vector; each element corresponds to one variable in \code{variables};
-the estimated bias of the regression coefficients due to compositional effect.}
+the estimated bias of the regression coefficients due to the compositional effect.}
 \item{output}{a list of data frames with columns 'baseMean', 'log2FoldChange', 'lfcSE', 'stat', 'pvalue', 'padj', 'reject',
- 'df'; \code{names(output)} is equal to \code{variables}; the rows of the data frame are taxa.
- Note: if there are taxa being excluded due to \code{prev.cut}, the number of rows of the output data frame
- is not equal to the number of rows of \code{otu.tab}. Taxa are identified by the rownames.
+ 'df'; \code{names(output)} is equal to \code{variables}; the rows of the data frame corresponds to taxa.
+ Note: if there are taxa being excluded due to \code{prev.cut}, the number of the rows of the output data frame
+ will be not equal to the number of the rows of \code{otu.tab}. Taxa are identified by the rownames.
  If the rownames of \code{otu.tab} are NULL, then \code{1 : nrow(otu.tab)} is set as the rownames of \code{otu.tab}.
  \itemize{
- \item{baseMean:}{ 2 to the power of intercept coefficients (normalized by one million)}
- \item{log2FoldChange:}{ bias-corrected coefficients of the variable of interest}
- \item{lfcSE:}{ standard errors of the coefficients of the variable of interest}
+ \item{baseMean:}{ 2 to the power of the intercept coefficients (normalized by one million)}
+ \item{log2FoldChange:}{ bias-corrected coefficients}
+ \item{lfcSE:}{ standard errors of the coefficients}
  \item{stat:}{ \code{log2FoldChange / lfcSE}}
  \item{pvalue:}{ \code{2 * pt(-abs(stat), df)}}
  \item{padj:}{ \code{p.adjust(pvalue, method = p.adj.method)}}
  \item{reject:}{ \code{padj <= alpha}}
- \item{df:}{ degree of freedom. Number of samples minus number of variables for fixed-effect model; estimates
- from R package \code{lmerTest} with Satterthwaite's method of approximation for linear mixed-effect model.}
+ \item{df:}{ degrees of freedom. The number of samples minus the number of explanatory variables (intercept included) for
+ fixed-effect models; estimates from R package \code{lmerTest} with Satterthwaite method of approximation for mixed-effect models.}
  }}
-\item{otu.tab.use}{the OTU table used for analysis (the \code{otu.tab} after the preprocessing:
+\item{otu.tab.use}{the OTU table used in the abundance analysis (the \code{otu.tab} after the preprocessing:
 samples that have NAs in the variables in \code{formula} or have less than \code{lib.cut} read counts are removed;
 taxa with prevalence less than \code{prev.cut} are removed and data is winsorized if \code{!is.null(winsor.quan)};
 and zeros are treated, i.e., imputed or pseudo-count added).}
-\item{meta.use}{the meta data used for analysis (only variables in \code{formula} are stored; samples that have NAs
+\item{meta.use}{the meta data used in the abundance analysis (only variables in \code{formula} are stored; samples that have NAs
 or have less than \code{lib.cut} read counts are removed; numerical variables are scaled).}
 }
 \description{
@@ -90,7 +91,7 @@ The function implements a simple, robust and highly scalable approach to tackle
 the compositional effects in differential abundance analysis. It fits linear regression models
 on the centered log2-ratio transformed data, identifies a bias term due to the transformation
 and compositional effect, and corrects the bias using the mode of the regression coefficients.
-It supports the mixed-effect models.
+It could fit mixed-effect models.
 }
 \examples{
 
@@ -117,9 +118,9 @@ linda.plot(linda.obj, c('Smokey', 'Sexmale'), alpha = 0.1, lfc.cut = 1,
 
 }
 \references{
-Huijuan Zhou, Xianyang Zhang, Kejun He & Jun Chen. LinDA: Linear Models for Differential Abundance
+Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for Differential Abundance
 Analysis of Microbiome Compositional Data.
 }
 \author{
-Huijuan Zhou
+Huijuan Zhou <huijuanzhou2019@gmail.com>, Jun Chen <Chen.Jun2@mayo.edu>, Maintainer: Huijuan Zhou
 }

@@ -8,7 +8,7 @@ Description: The package implements a simple, robust and highly scalable approac
     the compositional effects in differential abundance analysis. It fits linear regression models
     on the centered log2-ratio transformed data, identifies a bias term due to the transformation 
     and compositional effect, and corrects the bias using the mode of the regression coefficients.
-    It supports the mixed-effect models.
+    It could fit mixed-effect models. 
 License: GPL-2
 Encoding: UTF-8
 LazyData: true

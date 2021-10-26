@@ -5,8 +5,7 @@ Reference: Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. (2021). LinDA: 
 
 LinDA implements a simple, robust and highly scalable approach to tackle the compositional effects in differential abundance analysis. 
 It fits linear regression models on the centered log2-ratio transformed data, identifies a bias term due to the transformation
-and compositional effect, and corrects the bias using the mode of the regression coefficients (computes the p-values based on the bias-corrected regression 
-coefficients and applies the Benjamini–Hochberg procedure to control the FDR). It supports the mixed-effect models.
+and compositional effect, and corrects the bias using the mode of the regression coefficients. It could fit mixed-effect models. 
 
 ## Installation
 ```r

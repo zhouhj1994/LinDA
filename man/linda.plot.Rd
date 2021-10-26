@@ -39,7 +39,7 @@ A list of \code{ggplot2} objects.
 \item{plot.volcano}{a list of volcano plots. Each plot corresponds to one variable in \code{variables.plot}.}
 }
 \description{
-The function plots the effect size plot and volcano plot.
+The function plots the effect size plot and volcano plot based on the output from \code{linda}.
 }
 \examples{
 
@@ -66,9 +66,9 @@ linda.plot(linda.obj, c('Smokey', 'Sexmale'), alpha = 0.1, lfc.cut = 1,
 
 }
 \references{
-Huijuan Zhou, Xianyang Zhang, Kejun He & Jun Chen. LinDA: Linear Models for Differential Abundance
+Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for Differential Abundance
 Analysis of Microbiome Compositional Data.
 }
 \author{
-Huijuan Zhou
+Huijuan Zhou <huijuanzhou2019@gmail.com>, Jun Chen <Chen.Jun2@mayo.edu>, Maintainer: Huijuan Zhou
 }
