@@ -11,6 +11,7 @@ linda(
   adaptive = TRUE,
   imputation = FALSE,
   pseudo.cnt = 0.5,
+  corr.cut = 0.1,
   p.adj.method = "BH",
   alpha = 0.05,
   prev.cut = 0,
@@ -30,8 +31,8 @@ NAs are allowed. If there are NAs, the corresponding samples will be removed in 
 
 \item{adaptive}{TRUE or FALSE. Default is TRUE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter
 what it is actually set to be. Then the significant correlations between the sequencing depth and explanatory variables will be tested
-via the linear regression between the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to 0.1,
-the imputation approach will be used; otherwise, the pseudo-count approach will be used.
+via the linear regression between the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to
+\code{corr.cut}, the imputation approach will be used; otherwise, the pseudo-count approach will be used.
 The information of whether the imputation or pseudo-count approach is used will be printed.}
 
 \item{imputation}{TRUE or FALSE. Default is FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be
@@ -39,6 +40,9 @@ imputed using the formula in the referenced paper.}
 
 \item{pseudo.cnt}{a positive real value. Default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
 then we use the pseudo-count approach, i.e., we add \code{pseudo.cnt} to each value in \code{otu.tab}.}
+
+\item{corr.cut}{a real value between 0 and 1; significance level of correlations between the sequencing depth and
+explanatory variables. Default is 0.1.}
 
 \item{p.adj.method}{character; p-value adjusting approach. See R function \code{p.adjust}. Default is 'BH'.}
 
@@ -50,8 +54,8 @@ less than prev.cut are excluded. Default is 0 (no taxa will be excluded).}
 \item{lib.cut}{a non-negative real value; samples with less than \code{lib.cut} read counts are excluded.
 Default is 1 (no samples will be excluded).}
 
-\item{winsor.quan}{a real value between 0 and 1; winsorization cutoff for \code{otu.tab}, e.g., 0.97. If not given,
-winsorization process will not be conducted.}
+\item{winsor.quan}{a real value between 0 and 1; winsorization cutoff (quantile) for \code{otu.tab}, e.g., 0.97. Default is NULL.
+If NULL, winsorization process will not be conducted.}
 
 \item{n.cores}{a positive integer. If \code{n.cores > 1} and formula is in a form of mixed-effect model,
 \code{n.cores} parallels will be conducted. Default is 1.}
@@ -113,7 +117,8 @@ rownames(res.right$output[[1]])[which(res.right$output[[1]]$reject)]
 
 linda.obj <- linda(otu.tab, meta, formula = '~Smoke+Sex+(1|SubjectID)', alpha = 0.1,
                    prev.cut = 0.1, lib.cut = 1000, winsor.quan = 0.97)
-linda.plot(linda.obj, c('Smokey', 'Sexmale'), alpha = 0.1, lfc.cut = 1,
+linda.plot(linda.obj, c('Smokey', 'Sexmale'),
+           titles = c('Smoke: n v.s. y', 'Sex: female v.s. male'), alpha = 0.1, lfc.cut = 1,
            legend = TRUE, directory = NULL, width = 11, height = 8)
 
 }
@@ -122,5 +127,7 @@ Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for D
 Analysis of Microbiome Compositional Data.
 }
 \author{
-Huijuan Zhou <huijuanzhou2019@gmail.com>, Jun Chen <Chen.Jun2@mayo.edu>, Maintainer: Huijuan Zhou
+Huijuan Zhou \email{huijuanzhou2019@gmail.com}
+Jun Chen \email{Chen.Jun2@mayo.edu}
+Maintainer: Huijuan Zhou
 }

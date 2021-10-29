@@ -24,21 +24,23 @@ winsor.fun <- function(Y, quan) {
 #' @param formula character. For example: \code{formula = '~x1*x2+x3+(1|id)'}. At least one fixed effect is required.
 #' @param adaptive TRUE or FALSE. Default is TRUE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter
 #' what it is actually set to be. Then the significant correlations between the sequencing depth and explanatory variables will be tested
-#' via the linear regression between the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to 0.1,
-#' the imputation approach will be used; otherwise, the pseudo-count approach will be used.
+#' via the linear regression between the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to
+#' \code{corr.cut}, the imputation approach will be used; otherwise, the pseudo-count approach will be used.
 #' The information of whether the imputation or pseudo-count approach is used will be printed.
 #' @param imputation TRUE or FALSE. Default is FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be
 #' imputed using the formula in the referenced paper.
 #' @param pseudo.cnt a positive real value. Default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
 #' then we use the pseudo-count approach, i.e., we add \code{pseudo.cnt} to each value in \code{otu.tab}.
+#' @param corr.cut a real value between 0 and 1; significance level of correlations between the sequencing depth and
+#' explanatory variables. Default is 0.1.
 #' @param p.adj.method character; p-value adjusting approach. See R function \code{p.adjust}. Default is 'BH'.
 #' @param alpha a real value between 0 and 1; significance level of differential abundance. Default is 0.05.
 #' @param prev.cut a real value between 0 and 1; taxa with prevalence (percentage of nonzeros)
 #' less than prev.cut are excluded. Default is 0 (no taxa will be excluded).
 #' @param lib.cut a non-negative real value; samples with less than \code{lib.cut} read counts are excluded.
 #' Default is 1 (no samples will be excluded).
-#' @param winsor.quan a real value between 0 and 1; winsorization cutoff for \code{otu.tab}, e.g., 0.97. If not given,
-#' winsorization process will not be conducted.
+#' @param winsor.quan a real value between 0 and 1; winsorization cutoff (quantile) for \code{otu.tab}, e.g., 0.97. Default is NULL.
+#' If NULL, winsorization process will not be conducted.
 #' @param n.cores a positive integer. If \code{n.cores > 1} and formula is in a form of mixed-effect model,
 #' \code{n.cores} parallels will be conducted. Default is 1.
 #'
@@ -71,7 +73,9 @@ winsor.fun <- function(Y, quan) {
 #' \item{meta.use}{the meta data used in the abundance analysis (only variables in \code{formula} are stored; samples that have NAs
 #' or have less than \code{lib.cut} read counts are removed; numerical variables are scaled).}
 #'
-#' @author Huijuan Zhou <huijuanzhou2019@gmail.com>, Jun Chen <Chen.Jun2@mayo.edu>, Maintainer: Huijuan Zhou
+#' @author Huijuan Zhou \email{huijuanzhou2019@gmail.com}
+#' Jun Chen \email{Chen.Jun2@mayo.edu}
+#' Maintainer: Huijuan Zhou
 #' @references Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for Differential Abundance
 #' Analysis of Microbiome Compositional Data.
 #' @importFrom modeest mlv
@@ -98,13 +102,14 @@ winsor.fun <- function(Y, quan) {
 #'
 #' linda.obj <- linda(otu.tab, meta, formula = '~Smoke+Sex+(1|SubjectID)', alpha = 0.1,
 #'                    prev.cut = 0.1, lib.cut = 1000, winsor.quan = 0.97)
-#' linda.plot(linda.obj, c('Smokey', 'Sexmale'), alpha = 0.1, lfc.cut = 1,
+#' linda.plot(linda.obj, c('Smokey', 'Sexmale'),
+#'            titles = c('Smoke: n v.s. y', 'Sex: female v.s. male'), alpha = 0.1, lfc.cut = 1,
 #'            legend = TRUE, directory = NULL, width = 11, height = 8)
 #'
 #' @export
 
 linda <- function(otu.tab, meta, formula,
-                  adaptive = TRUE, imputation = FALSE, pseudo.cnt = 0.5,
+                  adaptive = TRUE, imputation = FALSE, pseudo.cnt = 0.5, corr.cut = 0.1,
                   p.adj.method = 'BH', alpha = 0.05,
                   prev.cut = 0, lib.cut = 1, winsor.quan = NULL, n.cores = 1) {
   if(any(is.na(otu.tab))) {
@@ -114,19 +119,31 @@ linda <- function(otu.tab, meta, formula,
   Z <- as.data.frame(meta[, allvars])
 
   ## preprocessing
-  keep.sam <- colSums(otu.tab) >= lib.cut & rowSums(is.na(Z)) == 0
+  keep.sam <- which(colSums(otu.tab) >= lib.cut & rowSums(is.na(Z)) == 0)
   Y <- otu.tab[, keep.sam]
   Z <- as.data.frame(Z[keep.sam, ])
   names(Z) <- allvars
 
   n <- ncol(Y)
-  keep.tax <- rowSums(Y > 0) / n >= prev.cut
+  keep.tax <- which(rowSums(Y > 0) / n >= prev.cut)
   Y <- Y[keep.tax, ]
   m <- nrow(Y)
 
+  ## some samples may have zero total counts after screening taxa
+  if(any(colSums(Y) == 0)) {
+    ind <- which(colSums(Y) > 0)
+    Y <- Y[, ind]
+    Z <- as.data.frame(Z[ind, ])
+    names(Z) <- allvars
+    keep.sam <- keep.sam[ind]
+    n <- ncol(Y)
+  }
+
+  ## scaling numerical variables
   ind <- sapply(1 : ncol(Z), function(i) is.numeric(Z[, i]))
   Z[, ind] <- scale(Z[, ind])
 
+  ## winsorization
   if(!is.null(winsor.quan)) {
     Y <- winsor.fun(Y, winsor.quan)
   }
@@ -160,7 +177,7 @@ linda <- function(otu.tab, meta, formula,
         tmp <- lm(as.formula(paste0('logN', formula)), Z)
       }
       corr.pval <- coef(summary(tmp))[-1, "Pr(>|t|)"]
-      if(any(corr.pval <= 0.1)) {
+      if(any(corr.pval <= corr.cut)) {
         cat('Imputation approach is used.\n')
         imputation <- TRUE
       } else {
@@ -259,10 +276,12 @@ linda <- function(otu.tab, meta, formula,
 #' @param linda.obj return from function \code{linda}.
 #' @param variables.plot vector; variables whose results are to be plotted. For example, suppose the return
 #' value \code{variables} is equal to \code{('x1', 'x2', 'x3b', 'x3c', 'x1:x2')}, then one could set \code{variables.plot = c('x3b', 'x1:x2')}.
+#' @param titles vector; titles of the effect size plot and volcano plot for each variable in \code{variables.plot}.
+#' Default is NULL. If NULL, the titles will be set as \code{variables.plot}.
 #' @param alpha a real value between 0 and 1; cutoff for \code{padj}.
-#' @param lfc.cut a positve value; cutoff for \code{log2FoldChange}.
+#' @param lfc.cut a positive value; cutoff for \code{log2FoldChange}.
 #' @param legend TRUE or FALSE; whether to show the legends of the effect size plot and volcano plot.
-#' @param directory character; the directory to save the figures, e.g., \code{getwd()}. If not given, figures are not saved.
+#' @param directory character; the directory to save the figures, e.g., \code{getwd()}. Default is NULL. If NULL, figures will not be saved.
 #' @param width the width of the graphics region in inches. See R function \code{pdf}.
 #' @param height the height of the graphics region in inches. See R function \code{pdf}.
 #'
@@ -270,7 +289,9 @@ linda <- function(otu.tab, meta, formula,
 #' \item{plot.lfc}{a list of effect size plots. Each plot corresponds to one variable in \code{variables.plot}.}
 #' \item{plot.volcano}{a list of volcano plots. Each plot corresponds to one variable in \code{variables.plot}.}
 #'
-#' @author Huijuan Zhou <huijuanzhou2019@gmail.com>, Jun Chen <Chen.Jun2@mayo.edu>, Maintainer: Huijuan Zhou
+#' @author Huijuan Zhou \email{huijuanzhou2019@gmail.com}
+#' Jun Chen \email{Chen.Jun2@mayo.edu}
+#' Maintainer: Huijuan Zhou
 #' @references Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for Differential Abundance
 #' Analysis of Microbiome Compositional Data.
 #' @import ggplot2
@@ -295,18 +316,20 @@ linda <- function(otu.tab, meta, formula,
 #'
 #' linda.obj <- linda(otu.tab, meta, formula = '~Smoke+Sex+(1|SubjectID)', alpha = 0.1,
 #'                    prev.cut = 0.1, lib.cut = 1000, winsor.quan = 0.97)
-#' linda.plot(linda.obj, c('Smokey', 'Sexmale'), alpha = 0.1, lfc.cut = 1,
+#' linda.plot(linda.obj, c('Smokey', 'Sexmale'),
+#'            titles = c('Smoke: n v.s. y', 'Sex: female v.s. male'), alpha = 0.1, lfc.cut = 1,
 #'            legend = TRUE, directory = NULL, width = 11, height = 8)
 #'
 #' @export
 
-linda.plot <- function(linda.obj, variables.plot, alpha = 0.05, lfc.cut = 1,
+linda.plot <- function(linda.obj, variables.plot, titles = NULL, alpha = 0.05, lfc.cut = 1,
                        legend = FALSE, directory = NULL, width = 11, height = 8) {
   bias <- linda.obj$bias
   output <- linda.obj$output
   otu.tab <- linda.obj$otu.tab.use
   meta <- linda.obj$meta.use
   variables <- linda.obj$variables
+  if(is.null(titles)) titles <- variables.plot
 
   taxa <- rownames(otu.tab)
   m <- length(taxa)
@@ -356,7 +379,7 @@ linda.plot <- function(linda.obj, variables.plot, alpha = 0.05, lfc.cut = 1,
         geom_errorbar(aes(xmin = Log2FoldChange - 1.96 * lfcSE,
                           xmax = Log2FoldChange + 1.96 * lfcSE), width = .2) +
         geom_vline(xintercept = 0, color = 'gray', linetype = 'dashed') +
-        ggtitle(variables.plot[i]) +
+        ggtitle(titles[i]) +
         theme_bw(base_size = 18)
       if(legend) {
         plot.lfc.i <- plot.lfc.i +
@@ -418,7 +441,7 @@ linda.plot <- function(linda.obj, variables.plot, alpha = 0.05, lfc.cut = 1,
       geom_vline(aes(xintercept = -lfc.cut), color = 'gray', linetype = 'dashed') +
       geom_vline(aes(xintercept = lfc.cut), color = 'gray', linetype = 'dashed') +
       ylab('-Log10Padj') +
-      ggtitle(variables.plot[i]) +
+      ggtitle(titles[i]) +
       theme_bw(base_size = 18)
     if(legend) {
       plot.volcano.i <- plot.volcano.i +

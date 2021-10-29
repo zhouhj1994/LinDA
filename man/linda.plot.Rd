@@ -7,6 +7,7 @@
 linda.plot(
   linda.obj,
   variables.plot,
+  titles = NULL,
   alpha = 0.05,
   lfc.cut = 1,
   legend = FALSE,
@@ -21,13 +22,16 @@ linda.plot(
 \item{variables.plot}{vector; variables whose results are to be plotted. For example, suppose the return
 value \code{variables} is equal to \code{('x1', 'x2', 'x3b', 'x3c', 'x1:x2')}, then one could set \code{variables.plot = c('x3b', 'x1:x2')}.}
 
+\item{titles}{vector; titles of the effect size plot and volcano plot for each variable in \code{variables.plot}.
+Default is NULL. If NULL, the titles will be set as \code{variables.plot}.}
+
 \item{alpha}{a real value between 0 and 1; cutoff for \code{padj}.}
 
-\item{lfc.cut}{a positve value; cutoff for \code{log2FoldChange}.}
+\item{lfc.cut}{a positive value; cutoff for \code{log2FoldChange}.}
 
 \item{legend}{TRUE or FALSE; whether to show the legends of the effect size plot and volcano plot.}
 
-\item{directory}{character; the directory to save the figures, e.g., \code{getwd()}. If not given, figures are not saved.}
+\item{directory}{character; the directory to save the figures, e.g., \code{getwd()}. Default is NULL. If NULL, figures will not be saved.}
 
 \item{width}{the width of the graphics region in inches. See R function \code{pdf}.}
 
@@ -61,7 +65,8 @@ rownames(res.right$output[[1]])[which(res.right$output[[1]]$reject)]
 
 linda.obj <- linda(otu.tab, meta, formula = '~Smoke+Sex+(1|SubjectID)', alpha = 0.1,
                    prev.cut = 0.1, lib.cut = 1000, winsor.quan = 0.97)
-linda.plot(linda.obj, c('Smokey', 'Sexmale'), alpha = 0.1, lfc.cut = 1,
+linda.plot(linda.obj, c('Smokey', 'Sexmale'),
+           titles = c('Smoke: n v.s. y', 'Sex: female v.s. male'), alpha = 0.1, lfc.cut = 1,
            legend = TRUE, directory = NULL, width = 11, height = 8)
 
 }
@@ -70,5 +75,7 @@ Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for D
 Analysis of Microbiome Compositional Data.
 }
 \author{
-Huijuan Zhou <huijuanzhou2019@gmail.com>, Jun Chen <Chen.Jun2@mayo.edu>, Maintainer: Huijuan Zhou
+Huijuan Zhou \email{huijuanzhou2019@gmail.com}
+Jun Chen \email{Chen.Jun2@mayo.edu}
+Maintainer: Huijuan Zhou
 }
