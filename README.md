@@ -36,6 +36,7 @@ rownames(res.right$output[[1]])[which(res.right$output[[1]]$reject)]
 
 linda.obj <- linda(otu.tab, meta, formula = '~Smoke+Sex+(1|SubjectID)', alpha = 0.1,
                    prev.cut = 0.1, lib.cut = 1000, winsor.quan = 0.97)
-linda.plot(linda.obj, c('Smokey', 'Sexmale'), alpha = 0.1, lfc.cut = 1,
+linda.plot(linda.obj, c('Smokey', 'Sexmale'), 
+           titles = c('Smoke: n v.s. y', 'Sex: female v.s. male'), alpha = 0.1, lfc.cut = 1,
            legend = TRUE, directory = NULL, width = 11, height = 8)
 ```
