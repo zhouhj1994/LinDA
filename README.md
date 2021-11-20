@@ -7,6 +7,8 @@ LinDA implements a simple, robust and highly scalable approach to tackle the com
 It fits linear regression models on the centered log2-ratio transformed data, identifies a bias term due to the transformation
 and compositional effect, and corrects the bias using the mode of the regression coefficients. It could fit mixed-effect models. 
 
+We have integrated the procedure into our CRAN package \texttt{MicrobiomeStat} as the "linda" function (https://CRAN.R-project.org/package=MicrobiomeStat).
+
 ## Installation
 ```r
 # install.packages(c("modeest", "lmerTest", "foreach", "parallel", "ggplot2", "ggrepel"))
