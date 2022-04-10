@@ -66,6 +66,9 @@ winsor.fun <- function(Y, quan) {
 #'  \item{df:}{ degrees of freedom. The number of samples minus the number of explanatory variables (intercept included) for
 #'  fixed-effect models; estimates from R package \code{lmerTest} with Satterthwaite method of approximation for mixed-effect models.}
 #'  }}
+#' \item{covariance}{a list of data frames; the data frame records the covariances between a certain regression coefficient and other coefficients;
+#'  \code{names(covariance)} is equal to \code{variables}; the rows of the data frame corresponds to taxa. If the length of \code{variables}
+#'  is equal to 1, then the \code{covariance} is NULL.}
 #' \item{otu.tab.use}{the OTU table used in the abundance analysis (the \code{otu.tab} after the preprocessing:
 #' samples that have NAs in the variables in \code{formula} or have less than \code{lib.cut} read counts are removed;
 #' taxa with prevalence less than \code{prev.cut} are removed and data is winsorized if \code{!is.null(winsor.quan)};
@@ -205,19 +208,26 @@ linda <- function(otu.tab, meta, formula,
   if(!random.effect) {
     suppressMessages(fit <- lm(as.formula(paste0('W', formula)), Z))
     res <- do.call(rbind, coef(summary(fit)))
-    df <- rep(n - ncol(model.matrix(fit)), m)
+    d <- ncol(model.matrix(fit))
+    df <- rep(n - d, m)
+    tmp <- vcov(fit)
+    res.cov <- foreach(i = 1 : m) %do% {tmp[((i-1)*d+1) : (i*d), ((i-1)*d+1) : (i*d)]}
+    res.cov <- do.call(rbind, res.cov)
+    rownames(res.cov) <- rownames(res)
+    colnames(res.cov) <- rownames(res)[1 : d]
   } else {
     fun <- function(i) {
       w <- W[, i]
       fit <- lmer(as.formula(paste0('w', formula)), Z)
-      coef(summary(fit))
+      list(coef(summary(fit)), vcov(fit))
     }
     if(n.cores > 1) {
-      res <- mclapply(c(1 : m), function(i) fun(i), mc.cores = n.cores)
+      tmp <- mclapply(c(1 : m), function(i) fun(i), mc.cores = n.cores)
     } else {
-      suppressMessages(res <- foreach(i = 1 : m) %do% fun(i))
+      suppressMessages(tmp <- foreach(i = 1 : m) %do% fun(i))
     }
-    res <- do.call(rbind, res)
+    res <- do.call(rbind, lapply(tmp, `[[`, 1))
+    res.cov <- do.call(rbind, lapply(tmp, `[[`, 2))
   }
   options(warn = oldw)
 
@@ -252,21 +262,40 @@ linda <- function(otu.tab, meta, formula,
     return(list(bias = bias, output = output))
   }
 
+  cov.fun <- function(x) {
+    tmp <- (1 : ncol(res.cov))[-c(1, which(colnames(res.cov) == x))]
+    covariance <- as.data.frame(res.cov[which(rownames(res.cov) == x), tmp])
+    rownames(covariance) <- taxa.name
+    colnames(covariance) <- colnames(res.cov)[tmp]
+    return(covariance)
+  }
+
   variables <- unique(rownames(res))[-1]
   variables.n <- length(variables)
   bias <- rep(NA, variables.n)
   output <- list()
+  if(variables.n == 1) {
+    covariance <- NULL
+  } else {
+    covariance <- list()
+  }
   for(i in 1 : variables.n) {
     tmp <- output.fun(variables[i])
     output[[i]] <- tmp[[2]]
     bias[i] <- tmp[[1]]
+    if(variables.n > 1) {
+      covariance[[i]] <- cov.fun(variables[i])
+    }
   }
   names(output) <- variables
+  if(variables.n > 1) {
+    names(covariance) <- variables
+  }
 
   rownames(Y) <- taxa.name
   colnames(Y) <- samp.name
   rownames(Z) <- samp.name
-  return(list(variables = variables, bias = bias, output = output, otu.tab.use = Y, meta.use = Z))
+  return(list(variables = variables, bias = bias, output = output, covariance = covariance, otu.tab.use = Y, meta.use = Z))
 }
 
 #' Plot linda results

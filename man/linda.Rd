@@ -83,6 +83,9 @@ the estimated bias of the regression coefficients due to the compositional effec
  \item{df:}{ degrees of freedom. The number of samples minus the number of explanatory variables (intercept included) for
  fixed-effect models; estimates from R package \code{lmerTest} with Satterthwaite method of approximation for mixed-effect models.}
  }}
+\item{covariance}{a list of data frames; the data frame records the covariances between a certain regression coefficient and other coefficients;
+ \code{names(covariance)} is equal to \code{variables}; the rows of the data frame corresponds to taxa. If the length of \code{variables}
+ is equal to 1, then the \code{covariance} is NULL.}
 \item{otu.tab.use}{the OTU table used in the abundance analysis (the \code{otu.tab} after the preprocessing:
 samples that have NAs in the variables in \code{formula} or have less than \code{lib.cut} read counts are removed;
 taxa with prevalence less than \code{prev.cut} are removed and data is winsorized if \code{!is.null(winsor.quan)};
