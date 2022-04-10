@@ -132,5 +132,6 @@ Analysis of Microbiome Compositional Data.
 \author{
 Huijuan Zhou \email{huijuanzhou2019@gmail.com}
 Jun Chen \email{Chen.Jun2@mayo.edu}
+Xianyang Zhang \email{zhangxiany@stat.tamu.edu}
 Maintainer: Huijuan Zhou
 }

@@ -78,6 +78,7 @@ winsor.fun <- function(Y, quan) {
 #'
 #' @author Huijuan Zhou \email{huijuanzhou2019@gmail.com}
 #' Jun Chen \email{Chen.Jun2@mayo.edu}
+#' Xianyang Zhang \email{zhangxiany@stat.tamu.edu}
 #' Maintainer: Huijuan Zhou
 #' @references Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for Differential Abundance
 #' Analysis of Microbiome Compositional Data.
@@ -320,6 +321,7 @@ linda <- function(otu.tab, meta, formula,
 #'
 #' @author Huijuan Zhou \email{huijuanzhou2019@gmail.com}
 #' Jun Chen \email{Chen.Jun2@mayo.edu}
+#' Xianyang Zhang \email{zhangxiany@stat.tamu.edu}
 #' Maintainer: Huijuan Zhou
 #' @references Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: Linear Models for Differential Abundance
 #' Analysis of Microbiome Compositional Data.
