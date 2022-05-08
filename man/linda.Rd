@@ -8,6 +8,7 @@ linda(
   otu.tab,
   meta,
   formula,
+  type = "count",
   adaptive = TRUE,
   imputation = FALSE,
   pseudo.cnt = 0.5,
@@ -29,36 +30,38 @@ NAs are allowed. If there are NAs, the corresponding samples will be removed in 
 
 \item{formula}{character. For example: \code{formula = '~x1*x2+x3+(1|id)'}. At least one fixed effect is required.}
 
-\item{adaptive}{TRUE or FALSE. Default is TRUE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter
+\item{type}{character; the type of \code{otu.tab}. It could be "count" or "proportion". The default is "count".}
+
+\item{adaptive}{TRUE or FALSE. The default is TRUE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter
 what it is actually set to be. Then the significant correlations between the sequencing depth and explanatory variables will be tested
 via the linear regression between the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to
 \code{corr.cut}, the imputation approach will be used; otherwise, the pseudo-count approach will be used.
 The information of whether the imputation or pseudo-count approach is used will be printed.}
 
-\item{imputation}{TRUE or FALSE. Default is FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be
+\item{imputation}{TRUE or FALSE. The default is FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be
 imputed using the formula in the referenced paper.}
 
-\item{pseudo.cnt}{a positive real value. Default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
+\item{pseudo.cnt}{a positive real value. The default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
 then we use the pseudo-count approach, i.e., we add \code{pseudo.cnt} to each value in \code{otu.tab}.}
 
 \item{corr.cut}{a real value between 0 and 1; significance level of correlations between the sequencing depth and
-explanatory variables. Default is 0.1.}
+explanatory variables. The default is 0.1.}
 
-\item{p.adj.method}{character; p-value adjusting approach. See R function \code{p.adjust}. Default is 'BH'.}
+\item{p.adj.method}{character; p-value adjusting approach. See R function \code{p.adjust}. The default is 'BH'.}
 
-\item{alpha}{a real value between 0 and 1; significance level of differential abundance. Default is 0.05.}
+\item{alpha}{a real value between 0 and 1; significance level of differential abundance. The default is 0.05.}
 
 \item{prev.cut}{a real value between 0 and 1; taxa with prevalence (percentage of nonzeros)
-less than prev.cut are excluded. Default is 0 (no taxa will be excluded).}
+less than prev.cut are excluded. The default is 0 (no taxa will be excluded).}
 
 \item{lib.cut}{a non-negative real value; samples with less than \code{lib.cut} read counts are excluded.
-Default is 1 (no samples will be excluded).}
+The default is 1 (no samples will be excluded).}
 
-\item{winsor.quan}{a real value between 0 and 1; winsorization cutoff (quantile) for \code{otu.tab}, e.g., 0.97. Default is NULL.
+\item{winsor.quan}{a real value between 0 and 1; winsorization cutoff (quantile) for \code{otu.tab}, e.g., 0.97. The default is NULL.
 If NULL, winsorization process will not be conducted.}
 
 \item{n.cores}{a positive integer. If \code{n.cores > 1} and formula is in a form of mixed-effect model,
-\code{n.cores} parallels will be conducted. Default is 1.}
+\code{n.cores} parallels will be conducted. The default is 1.}
 }
 \value{
 A list with the elements

@@ -22,27 +22,28 @@ winsor.fun <- function(Y, quan) {
 #' @param meta data frame of covariates. The rows of \code{meta} correspond to the columns of \code{otu.tab}.
 #' NAs are allowed. If there are NAs, the corresponding samples will be removed in the analysis.
 #' @param formula character. For example: \code{formula = '~x1*x2+x3+(1|id)'}. At least one fixed effect is required.
-#' @param adaptive TRUE or FALSE. Default is TRUE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter
+#' @param type character; the type of \code{otu.tab}. It could be "count" or "proportion". The default is "count".
+#' @param adaptive TRUE or FALSE. The default is TRUE. If TRUE, the parameter \code{imputation} will be treated as FALSE no matter
 #' what it is actually set to be. Then the significant correlations between the sequencing depth and explanatory variables will be tested
 #' via the linear regression between the log of the sequencing depths and \code{formula}. If any p-value is smaller than or equal to
 #' \code{corr.cut}, the imputation approach will be used; otherwise, the pseudo-count approach will be used.
 #' The information of whether the imputation or pseudo-count approach is used will be printed.
-#' @param imputation TRUE or FALSE. Default is FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be
+#' @param imputation TRUE or FALSE. The default is FALSE. If TRUE, then we use the imputation approach, i.e., zeros in \code{otu.tab} will be
 #' imputed using the formula in the referenced paper.
-#' @param pseudo.cnt a positive real value. Default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
+#' @param pseudo.cnt a positive real value. The default is 0.5. If \code{adaptive} and \code{imputation} are both FALSE,
 #' then we use the pseudo-count approach, i.e., we add \code{pseudo.cnt} to each value in \code{otu.tab}.
 #' @param corr.cut a real value between 0 and 1; significance level of correlations between the sequencing depth and
-#' explanatory variables. Default is 0.1.
-#' @param p.adj.method character; p-value adjusting approach. See R function \code{p.adjust}. Default is 'BH'.
-#' @param alpha a real value between 0 and 1; significance level of differential abundance. Default is 0.05.
+#' explanatory variables. The default is 0.1.
+#' @param p.adj.method character; p-value adjusting approach. See R function \code{p.adjust}. The default is 'BH'.
+#' @param alpha a real value between 0 and 1; significance level of differential abundance. The default is 0.05.
 #' @param prev.cut a real value between 0 and 1; taxa with prevalence (percentage of nonzeros)
-#' less than prev.cut are excluded. Default is 0 (no taxa will be excluded).
+#' less than prev.cut are excluded. The default is 0 (no taxa will be excluded).
 #' @param lib.cut a non-negative real value; samples with less than \code{lib.cut} read counts are excluded.
-#' Default is 1 (no samples will be excluded).
-#' @param winsor.quan a real value between 0 and 1; winsorization cutoff (quantile) for \code{otu.tab}, e.g., 0.97. Default is NULL.
+#' The default is 1 (no samples will be excluded).
+#' @param winsor.quan a real value between 0 and 1; winsorization cutoff (quantile) for \code{otu.tab}, e.g., 0.97. The default is NULL.
 #' If NULL, winsorization process will not be conducted.
 #' @param n.cores a positive integer. If \code{n.cores > 1} and formula is in a form of mixed-effect model,
-#' \code{n.cores} parallels will be conducted. Default is 1.
+#' \code{n.cores} parallels will be conducted. The default is 1.
 #'
 #' @return A list with the elements
 #' \item{variables}{A vector of variable names of all fixed effects in \code{formula}. For example: \code{formula = '~x1*x2+x3+(1|id)'}.
@@ -111,7 +112,7 @@ winsor.fun <- function(Y, quan) {
 #'
 #' @export
 
-linda <- function(otu.tab, meta, formula,
+linda <- function(otu.tab, meta, formula, type = 'count',
                   adaptive = TRUE, imputation = FALSE, pseudo.cnt = 0.5, corr.cut = 0.1,
                   p.adj.method = 'BH', alpha = 0.05,
                   prev.cut = 0, lib.cut = 1, winsor.quan = NULL, n.cores = 1) {
@@ -170,31 +171,43 @@ linda <- function(otu.tab, meta, formula,
   }
 
   ## handling zeros
-  if(any(Y == 0)) {
-    N <- colSums(Y)
-    if(adaptive) {
-      logN <- log(N)
-      if(random.effect) {
-        tmp <- lmer(as.formula(paste0('logN', formula)), Z)
-      } else {
-        tmp <- lm(as.formula(paste0('logN', formula)), Z)
+  if(type == 'count') {
+    if(any(Y == 0)) {
+      N <- colSums(Y)
+      if(adaptive) {
+        logN <- log(N)
+        if(random.effect) {
+          tmp <- lmer(as.formula(paste0('logN', formula)), Z)
+        } else {
+          tmp <- lm(as.formula(paste0('logN', formula)), Z)
+        }
+        corr.pval <- coef(summary(tmp))[-1, "Pr(>|t|)"]
+        if(any(corr.pval <= corr.cut)) {
+          cat('Imputation approach is used.\n')
+          imputation <- TRUE
+        } else {
+          cat('Pseudo-count approach is used.\n')
+          imputation <- FALSE
+        }
       }
-      corr.pval <- coef(summary(tmp))[-1, "Pr(>|t|)"]
-      if(any(corr.pval <= corr.cut)) {
-        cat('Imputation approach is used.\n')
-        imputation <- TRUE
+      if(imputation) {
+        N.mat <- matrix(rep(N, m), nrow = m, byrow = TRUE)
+        N.mat[Y > 0] <- 0
+        tmp <- N[max.col(N.mat)]
+        Y <- Y + N.mat / tmp
       } else {
-        cat('Pseudo-count approach is used.\n')
-        imputation <- FALSE
+        Y <- Y + pseudo.cnt
       }
     }
-    if(imputation) {
-      N.mat <- matrix(rep(N, m), nrow = m, byrow = TRUE)
-      N.mat[Y > 0] <- 0
-      tmp <- N[max.col(N.mat)]
-      Y <- Y + N.mat / tmp
-    } else {
-      Y <- Y + pseudo.cnt
+  }
+
+  if(type == 'proportion') {
+    if(any(Y == 0)) {
+      ## Half minimum approach
+      Y <- t(apply(Y, 1, function (x) {
+        x[x == 0] <- 0.5 * min(x[x != 0])
+        return(x)
+      }))
     }
   }
 
@@ -306,11 +319,11 @@ linda <- function(otu.tab, meta, formula,
 #' @param variables.plot vector; variables whose results are to be plotted. For example, suppose the return
 #' value \code{variables} is equal to \code{('x1', 'x2', 'x3b', 'x3c', 'x1:x2')}, then one could set \code{variables.plot = c('x3b', 'x1:x2')}.
 #' @param titles vector; titles of the effect size plot and volcano plot for each variable in \code{variables.plot}.
-#' Default is NULL. If NULL, the titles will be set as \code{variables.plot}.
+#' The default is NULL. If NULL, the titles will be set as \code{variables.plot}.
 #' @param alpha a real value between 0 and 1; cutoff for \code{padj}.
 #' @param lfc.cut a positive value; cutoff for \code{log2FoldChange}.
 #' @param legend TRUE or FALSE; whether to show the legends of the effect size plot and volcano plot.
-#' @param directory character; the directory to save the figures, e.g., \code{getwd()}. Default is NULL. If NULL, figures will not be saved.
+#' @param directory character; the directory to save the figures, e.g., \code{getwd()}. The default is NULL. If NULL, figures will not be saved.
 #' @param width the width of the graphics region in inches. See R function \code{pdf}.
 #' @param height the height of the graphics region in inches. See R function \code{pdf}.
 #'

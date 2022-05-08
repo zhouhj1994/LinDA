@@ -23,7 +23,7 @@ linda.plot(
 value \code{variables} is equal to \code{('x1', 'x2', 'x3b', 'x3c', 'x1:x2')}, then one could set \code{variables.plot = c('x3b', 'x1:x2')}.}
 
 \item{titles}{vector; titles of the effect size plot and volcano plot for each variable in \code{variables.plot}.
-Default is NULL. If NULL, the titles will be set as \code{variables.plot}.}
+The default is NULL. If NULL, the titles will be set as \code{variables.plot}.}
 
 \item{alpha}{a real value between 0 and 1; cutoff for \code{padj}.}
 
@@ -31,7 +31,7 @@ Default is NULL. If NULL, the titles will be set as \code{variables.plot}.}
 
 \item{legend}{TRUE or FALSE; whether to show the legends of the effect size plot and volcano plot.}
 
-\item{directory}{character; the directory to save the figures, e.g., \code{getwd()}. Default is NULL. If NULL, figures will not be saved.}
+\item{directory}{character; the directory to save the figures, e.g., \code{getwd()}. The default is NULL. If NULL, figures will not be saved.}
 
 \item{width}{the width of the graphics region in inches. See R function \code{pdf}.}
 
