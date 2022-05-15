@@ -277,7 +277,7 @@ linda <- function(otu.tab, meta, formula, type = 'count',
 
   cov.fun <- function(x) {
     tmp <- (1 : ncol(res.cov))[-c(1, which(colnames(res.cov) == x))]
-    covariance <- as.data.frame(res.cov[which(rownames(res.cov) == x), tmp])
+    covariance <- as.data.frame(as.matrix(res.cov[which(rownames(res.cov) == x), tmp]))
     rownames(covariance) <- taxa.name
     colnames(covariance) <- colnames(res.cov)[tmp]
     return(covariance)
