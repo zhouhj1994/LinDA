@@ -246,7 +246,11 @@ linda <- function(otu.tab, meta, formula, type = 'count',
 
   res.intc <- res[which(rownames(res) == '(Intercept)'), ]
   rownames(res.intc) <- NULL
-  baseMean <- 2 ^ res.intc[, 1]
+  options(warn = -1)
+  suppressMessages(tmp <- mlv(sqrt(n) * res.intc[, 1],
+                               method = 'meanshift', kernel = 'gaussian') / sqrt(n))
+  options(warn = oldw)
+  baseMean <- 2 ^ (res.intc[, 1] - tmp)
   baseMean <- baseMean / sum(baseMean) * 1e6
 
   output.fun <- function(x) {
