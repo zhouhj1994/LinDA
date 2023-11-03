@@ -105,7 +105,7 @@ or have less than \code{lib.cut} read counts are removed; numerical variables ar
 If the fitting model is a linear mixed-effect model, then it includes
 \itemize{
 \item{beta:}{ a matrix of the biased regression coefficients including intercept and all fixed effects; the culumns correspond to taxa}
-\item{beta.cov:}{ a list of covariance matrices of \code{\beta}; the elements corresponding to taxa}
+\item{beta.cov:}{ a list of covariance matrices of \code{beta}; the elements corresponding to taxa}
 \item{rand.cov:}{ a list with covariance matrices of variance parameters of random effects; the elements corresponding to taxa; see more details in the paper of 'lmerTest'}
 \item{Joc.beta.cov.rand:} { a list of a list of Jacobian matrices of \code{beta.cov} with respect to the variance parameters; the elements corresponding to taxa}
 \item{bias:}{ the estimated biases of the regression coefficients including intercept and all fixed effects}
