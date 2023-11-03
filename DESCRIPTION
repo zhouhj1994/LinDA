@@ -1,7 +1,7 @@
 Package: LinDA
 Type: Package
 Title: Linear model for differential abundance analysis
-Version: 0.1.0
+Version: 0.2.0
 Author: Huijuan Zhou, Jun Chen, Xianyang Zhang, Kejun He
 Maintainer: Huijuan Zhou <huijuanzhou2019@gmail.com>
 Description: The package implements a simple, robust and highly scalable approach to tackle 
