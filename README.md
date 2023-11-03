@@ -41,4 +41,8 @@ linda.obj <- linda(otu.tab, meta, formula = '~Smoke+Sex+(1|SubjectID)', alpha = 
 linda.plot(linda.obj, c('Smokey', 'Sexmale'), 
            titles = c('Smoke: n v.s. y', 'Sex: female v.s. male'), alpha = 0.1, lfc.cut = 1,
            legend = TRUE, directory = NULL, width = 11, height = 8)
+
+L <- matrix(c(0, 1, 0, 0, 0, 1), nrow = 2, byrow = TRUE)
+#L <- matrix(c(0, 1, 0), nrow = 1, byrow = TRUE)
+linda.wald.test(linda.obj, L, 'LMM', alpha = 0.1)
 ```
