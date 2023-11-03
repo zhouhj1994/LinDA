@@ -345,10 +345,10 @@ linda <- function(otu.tab, meta, formula, type = 'count',
 #' One can utilize the function to perform ANOVA-type analyses.
 #'
 #' @param linda.obj return from the \code{linda} function.
-#' @param L A matrix for testing \eqn{L\beta = 0}, where \eqn{\beta} includes the intercept and all fixed effects. Thus the number of columns of
+#' @param L A matrix for testing \code{Lb = 0}, where \code{b} includes the intercept and all fixed effects. Thus the number of columns of
 #' L must be equal to \code{length(variables)+1}, where \code{variables} is from \code{linda.obj}, which does not include the intercept.
 #' @param model \code{'LM'} or \code{'LMM'} indicating the model fitted in \{linda\} is linear model or linear mixed-effect model.
-#' @param alpha significance level for testing \eqn{L\beta = 0}.
+#' @param alpha significance level for testing \code{Lb = 0}.
 #' @param p.adj.method P-value adjusting approach. See R function \code{p.adjust}. The default is 'BH'.
 #'
 #' @return A data frame with columns
