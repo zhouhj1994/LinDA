@@ -99,6 +99,7 @@ winsor.fun <- function(Y, quan) {
 #' Analysis of Microbiome Compositional Data.
 #' @importFrom modeest mlv
 #' @importFrom lmerTest lmer
+#' @importFrom lmerTest as_lmerModLmerTest
 #' @import foreach
 #' @import parallel
 #' @examples
