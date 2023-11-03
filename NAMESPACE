@@ -2,6 +2,7 @@
 
 export(linda)
 export(linda.plot)
+export(linda.wald.test)
 import(foreach)
 import(ggplot2)
 import(ggrepel)

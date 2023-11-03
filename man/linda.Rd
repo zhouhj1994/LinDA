@@ -95,6 +95,21 @@ taxa with prevalence less than \code{prev.cut} are removed and data is winsorize
 and zeros are treated, i.e., imputed or pseudo-count added).}
 \item{meta.use}{the meta data used in the abundance analysis (only variables in \code{formula} are stored; samples that have NAs
 or have less than \code{lib.cut} read counts are removed; numerical variables are scaled).}
+\item{wald}{a list for use in Wald test. If the fitting model is a linear model, then it includes
+\itemize{
+\item{beta:}{ a matrix of the biased regression coefficients including intercept and all fixed effects; the culumns correspond to taxa}
+\item{sig:}{ the standard errors; the elements corresponding to taxa}
+\item{X:}{ the design matrix of the fitting model}
+\item{bias:}{ the estimated biases of the regression coefficients including intercept and all fixed effects}
+}
+If the fitting model is a linear mixed-effect model, then it includes
+\itemize{
+\item{beta:}{ a matrix of the biased regression coefficients including intercept and all fixed effects; the culumns correspond to taxa}
+\item{beta.cov:}{ a list of covariance matrices of \code{\beta}; the elements corresponding to taxa}
+\item{rand.cov:}{ a list with covariance matrices of variance parameters of random effects; the elements corresponding to taxa; see more details in the paper of 'lmerTest'}
+\item{Joc.beta.cov.rand:} { a list of a list of Jacobian matrices of \code{beta.cov} with respect to the variance parameters; the elements corresponding to taxa}
+\item{bias:}{ the estimated biases of the regression coefficients including intercept and all fixed effects}
+}}
 }
 \description{
 The function implements a simple, robust and highly scalable approach to tackle
